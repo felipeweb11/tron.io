@@ -9,6 +9,19 @@ app.get('/', function(req, res) {
 
 });
 
+app.get('/snake', function(req, res) {
+
+    res.sendFile(__dirname + '/client/snake.html');
+
+});
+
+app.get('/tron', function(req, res) {
+
+    res.sendFile(__dirname + '/client/tron.html');
+
+});
+
+
 app.use('/client', express.static(__dirname + '/client'));
 
 server.listen(8000);
