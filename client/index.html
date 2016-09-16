@@ -3,6 +3,7 @@
         <title>tron.io</title>
 
         <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/sweetalert2/4.3.2/sweetalert2.min.css">
 
         <style>
             .title {
@@ -21,6 +22,23 @@
                 width: 1000px;
                 height: 700px;
                 margin: 0 auto;
+                position: relative;
+            }
+
+            .game-start {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                top: 50%;
+                margin-left: -100px;
+                margin-top: -35px;
+                width: 200px;
+                height: 70px;
+                border: none;
+                background: #ccc;
+                display: block;
+                cursor: pointer;
+                font-size: 35px;
             }
 
         </style>
@@ -33,104 +51,139 @@
 
         <div class="wrapper">
             <canvas id="game" width="1000" height="720"></canvas>
+
+            <button id="startGame" class="game-start" v-on:click="startGame()">Jogar</button>
+
         </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/sweetalert2/4.3.2/sweetalert2.min.js"></script>
 
         <script>
 
-            var canvas = document.getElementById('game');
-            var context = canvas.getContext('2d');
-            var socket = io();
+            var app = new Vue({
+                el: 'body',
+                ready: function() {
 
-            function drawGrid(context) {
+                    this.document = $(document);
+                    this.startButton = this.document.find('#startGame');
+                    this.canvas = document.getElementById('game');
+                    this.context = this.canvas.getContext('2d');
+                    this.socket = io();
 
-                var bw = context.canvas.width;
-                var bh = context.canvas.height;
-                var p = 0;
+                    this.registerListeners();
 
-                context.beginPath();
+                    this.drawGrid();
 
-                context.fillStyle = "#283232";
-                context.fillRect(0, 0, bw, bh);
+                },
+                methods: {
 
-                context.beginPath();
+                    registerListeners: function() {
 
-                for (var x = 0; x <= bw; x += 40) {
-                    context.moveTo(0 + x + p, p);
-                    context.lineTo(0 + x + p, bh + p);
-                }
+                        var self = this;
 
-                for (var x = 0; x <= bh; x += 40) {
-                    context.moveTo(p, 0 + x + p);
-                    context.lineTo(bw + p, 0 + x + p);
-                }
+                        this.socket.on('playerMove', function(data) {
+                            for (var i = 0; i < data.length; i++) {
+                                var player = data[i];
 
-                context.strokeStyle = "#515b60";
-                context.stroke();
-            }
+                                self.drawPlayer(player);
+                            }
+                        });
 
-            drawGrid(context);
+                        this.socket.on('gameOver', function(data) {
 
-            function  drawPlayer(player, context) {
-                context.fillStyle = player.color;
-                context.beginPath();
-                context.moveTo(player.x - (player.width / 2), player.y - (player.height / 2));
-                context.lineTo(player.x + (player.width / 2), player.y - (player.height / 2));
-                context.lineTo(player.x + (player.width / 2), player.y + (player.height / 2));
-                context.lineTo(player.x - (player.width / 2), player.y + (player.height / 2));
-                context.closePath();
-                context.fill();
-            }
+                            self.socket.emit('exit');
 
-            socket.on('newPosition', function(data) {
-                for (var i = 0; i < data.length; i++) {
-                    var player = data[i];
+                            swal('Game over!', 'Não foi dessa vez :(', 'error');
 
-                    drawPlayer(player, context);
+                        });
+
+                        this.socket.on('gameStarted', function() {
+                            swal.close();
+                        });
+
+                    },
+
+                    drawGrid: function() {
+
+                        var bw = this.canvas.width;
+                        var bh = this.canvas.height;
+                        var p = 0;
+
+                        this.context.beginPath();
+
+                        this.context.fillStyle = "#283232";
+                        this.context.fillRect(0, 0, bw, bh);
+
+                        this.context.beginPath();
+
+                        for (var x = 0; x <= bw; x += 40) {
+                            this.context.moveTo(0 + x + p, p);
+                            this.context.lineTo(0 + x + p, bh + p);
+                        }
+
+                        for (var x = 0; x <= bh; x += 40) {
+                            this.context.moveTo(p, 0 + x + p);
+                            this.context.lineTo(bw + p, 0 + x + p);
+                        }
+
+                        this.context.strokeStyle = "#515b60";
+                        this.context.stroke();
+                    },
+
+                    drawPlayer: function (player) {
+                        this.context.fillStyle = player.color;
+                        this.context.beginPath();
+                        this.context.moveTo(player.x - (player.width / 2), player.y - (player.height / 2));
+                        this.context.lineTo(player.x + (player.width / 2), player.y - (player.height / 2));
+                        this.context.lineTo(player.x + (player.width / 2), player.y + (player.height / 2));
+                        this.context.lineTo(player.x - (player.width / 2), player.y + (player.height / 2));
+                        this.context.closePath();
+                        this.context.fill();
+                    },
+
+                    enableControls: function() {
+
+                        var self = this;
+
+                        self.document.on('keydown', function(e) {
+
+                            switch (e.keyCode) {
+                                case 39: self.socket.emit('keyPress', {inputId: 'right'}); break;
+                                case 40: self.socket.emit('keyPress', {inputId: 'down'}); break;
+                                case 37: self.socket.emit('keyPress', {inputId: 'left'}); break;
+                                case 38: self.socket.emit('keyPress', {inputId: 'up'}); break;
+                            }
+
+                        });
+
+                    },
+
+                    disableControls: function() {
+                        self.document.off('keydown');
+
+                    },
+
+                    startGame: function() {
+
+                        this.enableControls();
+                        this.startButton.hide();
+
+                        swal({
+                            title: '',
+                            text: 'Aguardando outros jogadores...',
+                            allowOutsideClick: false,
+                            showConfirmButton: false
+                        });
+
+                        this.socket.emit('startGame', {roomType: 'two-players'});
+
+                    }
+
                 }
             });
-
-            socket.on('gameOver', function(data) {
-
-                socket.emit('exit');
-
-                alert('Game over.');
-
-            });
-
-            document.onkeydown = function(event) {
-
-                if (event.keyCode === 39)
-                    socket.emit('keyPress', {inputId: 'right'});
-
-                if (event.keyCode === 40)
-                    socket.emit('keyPress', {inputId: 'down'});
-
-                if (event.keyCode === 37)
-                    socket.emit('keyPress', {inputId: 'left'});
-
-                if (event.keyCode === 38)
-                    socket.emit('keyPress', {inputId: 'up'});
-
-            };
-
-            document.onkeyup = function(event) {
-
-                if (event.keyCode === 39)
-                    socket.emit('keyPress', {inputId: 'right'});
-
-                if (event.keyCode === 40)
-                    socket.emit('keyPress', {inputId: 'down'});
-
-                if (event.keyCode === 37)
-                    socket.emit('keyPress', {inputId: 'left'});
-
-                if (event.keyCode === 38)
-                    socket.emit('keyPress', {inputId: 'up'});
-
-            };
-
 
         </script>
 

@@ -5,17 +5,53 @@ function Player (socket, color) {
     this.color = color;
     this.width = 8;
     this.height = 8;
-    this.x = 100;
-    this.y = 100;
+    this.x = 0;
+    this.y = 0;
     this.history = [];
     this.currentDirection = 'right';
     this.speed = 8;
-    this.initialPosition = 'left';
+    this.initialPosition = 'left-up';
     this.grid = null;
 
 }
 
 Player.prototype = {
+
+    init: function() {
+
+        switch (this.initialPosition) {
+
+            case 'left-up':
+                this.x = 100;
+                this.y = 100;
+                this.color = '#33cc99';
+                this.currentDirection = 'right';
+                break;
+
+            case 'right-up':
+                this.x = 900;
+                this.y = 100;
+                this.color = '#f00';
+                this.currentDirection = 'left';
+                break;
+
+            case 'left-down':
+                this.x = 100;
+                this.y = 620;
+                this.color = '#00f';
+                this.currentDirection = 'right';
+                break;
+
+            case 'right-down':
+                this.x = 900;
+                this.y = 620;
+                this.color = '#000';
+                this.currentDirection = 'left';
+                break;
+
+        }
+
+    },
     
     move: function() {
 
@@ -35,7 +71,7 @@ Player.prototype = {
         }
 
         if (this.checkCollision()) {
-            game.stop(cycle);
+            //
         }
 
         var coords = this.generateCoords();
@@ -49,7 +85,7 @@ Player.prototype = {
 
             if (this.collidedWith(playerOpponent)) {
 
-                this.socket.emit('gameOver');
+                //this.socket.emit('gameOver');
 
                 this.grid.removePlayer(this);
             }
@@ -60,14 +96,15 @@ Player.prototype = {
 
     collidedWith: function(opponent) {
 
-        if ((this.x < (this.width / 2)) ||
-            (this.x > this.grid.width - (this.width / 2)) ||
-            (this.y < (this.height / 2)) ||
-            (this.y > this.grid.height - (this.height / 2)) ||
+        var halfWidth =  this.width / 2;
+        var halfHeight =  this.height / 2;
+
+        return (this.x < halfWidth) ||
+            (this.x > this.grid.width - halfWidth) ||
+            (this.y < halfHeight) ||
+            (this.y > this.grid.height - halfHeight) ||
             (this.history.indexOf(this.generateCoords()) >= 0) ||
-            (typeof opponent.history !== 'undefined' && opponent.history.indexOf(this.generateCoords()) >= 0)) {
-            return true;
-        }
+            (typeof opponent.history !== 'undefined' && opponent.history.indexOf(this.generateCoords()) >= 0);
     },
 
     generateCoords: function() {

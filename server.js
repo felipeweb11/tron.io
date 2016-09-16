@@ -2,14 +2,15 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var uuid = require('node-uuid');
+var serverPort = 8000;
+var EventBus = require('eventbusjs');
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
 
-server.listen(8000);
-
-console.log('Server started.');
+server.listen(serverPort);
+console.log('Server started. Listening on port ' + serverPort + '...');
 
 var Player = require('./src/model/player');
 var Room = require('./src/model/room');
@@ -18,7 +19,22 @@ var io = require('socket.io')(server, {});
 
 var SOCKET_LIST = {};
 var PLAYER_LIST = {};
-var CURRENT_ROOM = 0;
+var ROOMS = [];
+
+function findAvailableRoom(type) {
+
+    for (var i in ROOMS) {
+
+        var room = ROOMS[i];
+
+        if (room.type == type && ! room.isFull()) {
+            return room;
+        }
+    }
+
+    ROOMS.push(Room.create(type, new Grid()));
+    return ROOMS[0];
+}
 
 io.sockets.on('connection', function(socket) {
 
@@ -26,30 +42,51 @@ io.sockets.on('connection', function(socket) {
 
     SOCKET_LIST[socket.id] = socket;
 
-    var player = Player.create(socket, '#33cc99');
-
-    if (CURRENT_ROOM == 0) {
-        CURRENT_ROOM = Room.create(new Grid());
-    }
-
-    CURRENT_ROOM.join(player);
-
-    PLAYER_LIST[player.id] = player;
-
     socket.on('disconnect', function() {
 
         delete SOCKET_LIST[socket.id];
         delete PLAYER_LIST[socket.id];
 
+        for (var i in ROOMS) {
+
+            var room = ROOMS[i];
+
+            for (var j in room.getPlayers()) {
+
+                var player = room.getPlayers()[j];
+
+                room.removePlayer(player);
+            }
+        }
+
     });
 
-    socket.on('keyPress', function(data) {
-        player.setDirection(data.inputId);
-    });
+    socket.on('startGame', function(data) {
 
-    socket.on('exit', function() {
-        delete SOCKET_LIST[socket.id];
-        delete PLAYER_LIST[socket.id];
+        var player = Player.create(socket, '#33cc99');
+        PLAYER_LIST[player.id] = player;
+
+        var room = findAvailableRoom(data.roomType);
+
+        room.join(player);
+
+        if (room.isFull()) {
+
+            room.startGame();
+
+            room.emit('gameStarted');
+
+        }
+
+        socket.on('keyPress', function(data) {
+            player.setDirection(data.inputId);
+        });
+
+        socket.on('exit', function() {
+            delete SOCKET_LIST[socket.id];
+            delete PLAYER_LIST[socket.id];
+        });
+
     });
 
 });
@@ -58,18 +95,37 @@ setInterval(function() {
 
     var pack = [];
 
-    for (var i in PLAYER_LIST) {
+    for (var i in ROOMS) {
 
-        var player = PLAYER_LIST[i];
+        var room = ROOMS[i];
 
-        player.move();
+        if (room.gameIsRunning()) {
 
-        pack.push(player.encoded());
+            for (var j in room.getPlayers()) {
+
+                var player = room.getPlayers()[j];
+                
+                player.move();
+
+                pack.push(player.encoded());
+            }
+
+        }
+
     }
+
+    // for (var i in PLAYER_LIST) {
+    //
+    //     var player = PLAYER_LIST[i];
+    //
+    //     player.move();
+    //
+    //     pack.push(player.encoded());
+    // }
 
     for (var i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i];
-        socket.emit('newPosition', pack);
+        socket.emit('playerMove', pack);
     }
 
 }, 1000 / 28);
