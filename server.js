@@ -72,4 +72,4 @@ setInterval(function() {
         socket.emit('newPosition', pack);
     }
 
-}, 1000 / 30);
+}, 1000 / 28);
