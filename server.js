@@ -23,7 +23,9 @@ var ROOMS = [];
 
 function findAvailableRoom(type) {
 
-    for (var i in ROOMS) {
+    var i;
+
+    for (i in ROOMS) {
 
         var room = ROOMS[i];
 
@@ -44,7 +46,9 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('disconnect', function() {
 
-        for (var i in ROOMS) {
+        var i;
+
+        for (i in ROOMS) {
 
             var room = ROOMS[i];
 
@@ -98,9 +102,10 @@ io.sockets.on('connection', function(socket) {
 
 setInterval(function() {
 
+    var i;
     var pack = [];
 
-    for (var i in ROOMS) {
+    for (i in ROOMS) {
 
         var room = ROOMS[i];
 
@@ -119,16 +124,7 @@ setInterval(function() {
 
     }
 
-    // for (var i in PLAYER_LIST) {
-    //
-    //     var player = PLAYER_LIST[i];
-    //
-    //     player.move();
-    //
-    //     pack.push(player.encoded());
-    // }
-
-    for (var i in SOCKET_LIST) {
+    for (i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i];
         socket.emit('playerMove', pack);
     }
