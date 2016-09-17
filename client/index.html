@@ -1,4 +1,4 @@
-<html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml">
     <head>
         <title>tron.io</title>
 
@@ -7,7 +7,7 @@
 
         <style>
             .title {
-                font-family: 'Orbitron';
+                font-family: 'Orbitron', sans-serif;
                 font-size: 40px;
                 text-align: center;
                 padding: 20px 0 0 0;
@@ -27,7 +27,6 @@
 
             .game-start {
                 position: absolute;
-                top: 0;
                 left: 50%;
                 top: 50%;
                 margin-left: -100px;
@@ -63,7 +62,7 @@
 
         <script>
 
-            var app = new Vue({
+            new Vue({
                 el: 'body',
                 ready: function() {
 
@@ -110,7 +109,10 @@
 
                         var bw = this.canvas.width;
                         var bh = this.canvas.height;
+                        var w = 40;
+                        var h = 40;
                         var p = 0;
+                        var x;
 
                         this.context.beginPath();
 
@@ -119,14 +121,14 @@
 
                         this.context.beginPath();
 
-                        for (var x = 0; x <= bw; x += 40) {
-                            this.context.moveTo(0 + x + p, p);
-                            this.context.lineTo(0 + x + p, bh + p);
+                        for (x = 0; x <= bw; x += w) {
+                            this.context.moveTo(x + p, p);
+                            this.context.lineTo(x + p, bh + p);
                         }
 
-                        for (var x = 0; x <= bh; x += 40) {
-                            this.context.moveTo(p, 0 + x + p);
-                            this.context.lineTo(bw + p, 0 + x + p);
+                        for (x = 0; x <= bh; x += h) {
+                            this.context.moveTo(p, x + p);
+                            this.context.lineTo(bw + p, x + p);
                         }
 
                         this.context.strokeStyle = "#515b60";
@@ -134,12 +136,16 @@
                     },
 
                     drawPlayer: function (player) {
+
+                        var halfWidth = player.width / 2;
+                        var halfHeight = player.height / 2;
+
                         this.context.fillStyle = player.color;
                         this.context.beginPath();
-                        this.context.moveTo(player.x - (player.width / 2), player.y - (player.height / 2));
-                        this.context.lineTo(player.x + (player.width / 2), player.y - (player.height / 2));
-                        this.context.lineTo(player.x + (player.width / 2), player.y + (player.height / 2));
-                        this.context.lineTo(player.x - (player.width / 2), player.y + (player.height / 2));
+                        this.context.moveTo(player.x - halfWidth, player.y - halfHeight);
+                        this.context.lineTo(player.x + halfWidth, player.y - halfHeight);
+                        this.context.lineTo(player.x + halfWidth, player.y + halfHeight);
+                        this.context.lineTo(player.x - halfWidth, player.y + halfHeight);
                         this.context.closePath();
                         this.context.fill();
                     },

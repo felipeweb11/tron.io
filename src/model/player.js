@@ -7,7 +7,7 @@ function Player (socket, color) {
     this.height = 8;
     this.x = 0;
     this.y = 0;
-    this.history = [];
+    this.trail = [];
     this.currentDirection = 'right';
     this.speed = 8;
     this.initialPosition = 'left-up';
@@ -76,7 +76,7 @@ Player.prototype = {
 
         var coords = this.generateCoords();
 
-        this.history.push(coords);
+        this.trail.push(coords);
     },
 
     checkCollision: function() {
@@ -101,12 +101,12 @@ Player.prototype = {
         var halfWidth =  this.width / 2;
         var halfHeight =  this.height / 2;
 
-        return (this.x < halfWidth) ||
-            (this.x > this.grid.width - halfWidth) ||
+        return(this.x < halfWidth) ||
             (this.y < halfHeight) ||
+            (this.x > this.grid.width - halfWidth) ||
             (this.y > this.grid.height - halfHeight) ||
-            (this.history.indexOf(this.generateCoords()) >= 0) ||
-            (opponent.history.indexOf(this.generateCoords()) >= 0);
+            (this.trail.indexOf(this.generateCoords()) >= 0) ||
+            (opponent.trail.indexOf(this.generateCoords()) >= 0);
     },
 
     generateCoords: function() {
