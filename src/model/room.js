@@ -44,9 +44,13 @@ Room.prototype = {
         this.gameStarted = true;
     },
 
+    reset: function() {
+        this.gameStarted = false;
+    },
+
     emit: function(message, data) {
 
-        if (typeof data === 'undfined') {
+        if (typeof data === 'undefined') {
             data = {};
         }
 

@@ -1,4 +1,4 @@
-function Grid (grid) {
+function Grid () {
 
     this.width = 1000;
     this.height = 720;

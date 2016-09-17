@@ -81,7 +81,9 @@ Player.prototype = {
 
     checkCollision: function() {
 
-        for (var playerOpponent in this.grid.players) {
+        for (var i in this.grid.players) {
+
+            var playerOpponent = this.grid.players[i];
 
             if (this.collidedWith(playerOpponent)) {
 
@@ -104,7 +106,7 @@ Player.prototype = {
             (this.y < halfHeight) ||
             (this.y > this.grid.height - halfHeight) ||
             (this.history.indexOf(this.generateCoords()) >= 0) ||
-            (typeof opponent.history !== 'undefined' && opponent.history.indexOf(this.generateCoords()) >= 0);
+            (opponent.history.indexOf(this.generateCoords()) >= 0);
     },
 
     generateCoords: function() {

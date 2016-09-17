@@ -44,20 +44,19 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('disconnect', function() {
 
-        delete SOCKET_LIST[socket.id];
-        delete PLAYER_LIST[socket.id];
-
         for (var i in ROOMS) {
 
             var room = ROOMS[i];
 
-            for (var j in room.getPlayers()) {
-
-                var player = room.getPlayers()[j];
-
-                room.removePlayer(player);
+            if (! room.isFull()) {
+                room.reset();
             }
+
+            room.removePlayer(PLAYER_LIST[socket.id]);
         }
+
+        delete SOCKET_LIST[socket.id];
+        delete PLAYER_LIST[socket.id];
 
     });
 
@@ -67,8 +66,14 @@ io.sockets.on('connection', function(socket) {
         PLAYER_LIST[player.id] = player;
 
         var room = findAvailableRoom(data.roomType);
+        
+        if (! room.isFull()) {
+            room.reset();
+        }
+        
 
         room.join(player);
+
 
         if (room.isFull()) {
 
