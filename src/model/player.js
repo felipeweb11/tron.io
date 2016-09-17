@@ -12,6 +12,7 @@ function Player (socket, color) {
     this.speed = 8;
     this.initialPosition = 'left-up';
     this.grid = null;
+    this.active = true;
 
 }
 
@@ -71,7 +72,10 @@ Player.prototype = {
         }
 
         if (this.checkCollision()) {
-            //
+            this.active = false;
+
+            this.socket.emit('gameOver');
+
         }
 
         var coords = this.generateCoords();
@@ -81,18 +85,19 @@ Player.prototype = {
 
     checkCollision: function() {
 
-        for (var i in this.grid.players) {
+        var i;
+
+        for (i in this.grid.players) {
 
             var playerOpponent = this.grid.players[i];
 
             if (this.collidedWith(playerOpponent)) {
-
-                //this.socket.emit('gameOver');
-
-                this.grid.removePlayer(this);
+                return true;
             }
 
         }
+
+        return false;
 
     },
 
@@ -140,6 +145,10 @@ Player.prototype = {
         }
     },
 
+    isActive: function() {
+        return this.active;
+    },
+
     encoded: function() {
         return {
             id: this.id,
@@ -147,7 +156,8 @@ Player.prototype = {
             y: this.y,
             width: this.width,
             height: this.height,
-            color: this.color
+            color: this.color,
+            active: this.active
         };
     },
 

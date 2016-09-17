@@ -9,6 +9,8 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
 
+app.use('/', express.static(__dirname + '/client'));
+
 server.listen(serverPort);
 console.log('Server started. Listening on port ' + serverPort + '...');
 
@@ -114,8 +116,11 @@ setInterval(function() {
             for (var j in room.getPlayers()) {
 
                 var player = room.getPlayers()[j];
-                
-                player.move();
+
+
+                if (player.isActive()) {
+                    player.move();
+                }
 
                 pack.push(player.encoded());
             }

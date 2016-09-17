@@ -33,7 +33,13 @@ Grid.prototype = {
 
     removePlayer: function(player) {
 
-        for (var i in this.players) {
+        if (typeof player === 'undefined') {
+            return;
+        }
+
+        var i;
+
+        for (i in this.players) {
 
             var p = this.players[i];
 
