@@ -78,9 +78,7 @@ Player.prototype = {
 
         }
 
-        var coords = this.generateCoords();
-
-        this.trail.push(coords);
+        this.trail.push(this.position());
     },
 
     checkCollision: function() {
@@ -105,16 +103,17 @@ Player.prototype = {
 
         var halfWidth =  this.width / 2;
         var halfHeight =  this.height / 2;
+        var position = this.position();
 
         return(this.x < halfWidth) ||
             (this.y < halfHeight) ||
             (this.x > this.grid.width - halfWidth) ||
             (this.y > this.grid.height - halfHeight) ||
-            (this.trail.indexOf(this.generateCoords()) >= 0) ||
-            (opponent.trail.indexOf(this.generateCoords()) >= 0);
+            (this.trail.indexOf(position) >= 0) ||
+            (opponent.trail.indexOf(position) >= 0);
     },
 
-    generateCoords: function() {
+    position: function() {
         return this.x + "," + this.y;
     },
 

@@ -5,6 +5,14 @@ var uuid = require('node-uuid');
 var serverPort = 8000;
 var EventBus = require('eventbusjs');
 
+var countSize = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
@@ -94,8 +102,8 @@ io.sockets.on('connection', function(socket) {
         });
 
         socket.on('exit', function() {
-            delete SOCKET_LIST[socket.id];
-            delete PLAYER_LIST[socket.id];
+            //delete SOCKET_LIST[socket.id];
+            //delete PLAYER_LIST[socket.id];
         });
 
     });
@@ -128,6 +136,8 @@ setInterval(function() {
         }
 
     }
+
+    //console.log(countSize(SOCKET_LIST));
 
     for (i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i];
